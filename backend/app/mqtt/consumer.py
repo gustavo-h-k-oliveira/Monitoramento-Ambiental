@@ -1,6 +1,8 @@
 import json
 import paho.mqtt.client as mqtt
 
+from app.database.db import insert_sensor_data
+
 MQTT_BROKER = "192.168.86.8"
 MQTT_PORT = 1883
 MQTT_TOPIC = "iot/esp32/environment"
@@ -25,6 +27,8 @@ def on_message(client, userdata, msg):
         print(f"Dados recebidos do dispositivo {device_id}:")
         print(f"Dispositivo: {device_id}, Temperatura: {temperature}°C, Umidade: {humidity}%, Lux: {lux} lux")
         print(50 * "-")
+
+        insert_sensor_data(device_id, temperature, humidity, lux)
 
     except Exception as e:
         print("Erro ao processar a mensagem MQTT: " + str(e))
