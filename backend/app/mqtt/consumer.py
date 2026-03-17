@@ -40,6 +40,11 @@ def start_mqtt_consumer():
     client.on_connect = on_connect
     client.on_message = on_message
 
-    client.connect(MQTT_BROKER, MQTT_PORT, 60)
+    try:
+        client.connect(MQTT_BROKER, MQTT_PORT, 60)
+    except Exception as e:
+        print(f"Não foi possível conectar ao broker MQTT ({MQTT_BROKER}:{MQTT_PORT}): {e}")
+        print("Continuando sem consumir dados MQTT. Você ainda pode consultar os dados existentes no banco de dados.")
+        return
 
     client.loop_forever()
