@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from typing import List
-from app.database.db import get_db, get_latest_data, get_average_temp
+from app.database.db import get_latest_data, get_average_data
+from app.models.metrics import Metric
 
 router = APIRouter(
     prefix="/sensors",
@@ -9,7 +10,6 @@ router = APIRouter(
 
 def row_to_dict(row):
     return {
-        # "id": row["id"],
         "device_id": row["device_id"],
         "temperature": row["temperature"],
         "humidity": row["humidity"],
@@ -25,11 +25,11 @@ def get_latest():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# @router.get("/average/")
-# def get_average():
-#     try:
-#         rows = get_average_temp()
-#         return [{"bucket": r["bucket"], "avg_temp": float(r["avg_temp"])} for r in rows]
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
+@router.get("/average/")
+def get_average(metric: Metric = Query(...)):
+    try:
+        rows = get_average_data(metric)
+        return [{"bucket": r["bucket"], "avg": float(r["avg"])} for r in rows]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
     

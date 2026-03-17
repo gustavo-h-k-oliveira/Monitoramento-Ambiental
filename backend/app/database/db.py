@@ -1,6 +1,9 @@
 import psycopg
 from psycopg.rows import dict_row
 from contextlib import contextmanager
+from psycopg import sql
+
+from app.models.metrics import Metric
 
 @contextmanager
 def get_db():
@@ -43,20 +46,27 @@ def get_latest_data():
 
             return cur.fetchall()
 
-def get_average_temp():
+VALID_METRICS = {"temperature", "humidity", "lux"}
+
+def get_average_data(metric: Metric):
+
+    metric_name = metric.value
+
+    if metric_name not in VALID_METRICS:
+        raise ValueError("Métrica inválida")
+
+    query = sql.SQL(
+        """
+        SELECT
+            time_bucket('10 minutes', time) AS bucket,
+            AVG({metric}) AS avg
+        FROM sensor_data
+        GROUP BY 1
+        ORDER BY 1
+        """
+    ).format(metric=sql.Identifier(metric))
 
     with get_db() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-
-            cur.execute(
-                """
-                    SELECT
-                        time_bucket('10 minutes', time),
-                        AVG(temperature)
-                    FROM sensor_data
-                    GROUP BY 1
-                    ORDER BY 1
-                """
-            )
-
+            cur.execute(query)
             return cur.fetchall()
