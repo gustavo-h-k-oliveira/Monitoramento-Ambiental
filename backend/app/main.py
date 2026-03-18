@@ -25,4 +25,8 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
 app.include_router(sensors.router)

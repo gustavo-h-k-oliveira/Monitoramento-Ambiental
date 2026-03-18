@@ -1,7 +1,11 @@
 import psycopg
+from psycopg import sql as pgsql
 from psycopg.rows import dict_row
 from contextlib import contextmanager
 from psycopg import sql
+
+from datetime import datetime
+from typing import Optional
 
 from app.models.metrics import Metric
 
@@ -30,19 +34,31 @@ def insert_sensor_data(device_id, temperature, humidity, lux):
 
         conn.commit()
 
-def get_latest_data():
-        
+def get_latest_data(from_time: Optional[datetime] = None, to_time: Optional[datetime] = None):
+    
     with get_db() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
+    
+            query = """
+                SELECT *
+                FROM sensor_data
+            """
+            filters, params = [], []
 
-            cur.execute(
-                """
-                    SELECT *
-                    FROM sensor_data
-                    ORDER BY time DESC
-                    LIMIT 25
-                """
-            )
+            if from_time is not None:
+                filters.append("time >= %s")
+                params.append(from_time)
+            if to_time is not None:
+                filters.append("time <= %s")
+                params.append(to_time)
+
+            if filters:
+                query += " WHERE " + " AND ".join(filters)
+
+            query += " ORDER BY time DESC"
+
+            # converte para o tipo que psycopg espera (QueryNoTemplate)
+            cur.execute(pgsql.SQL(query), tuple(params))
 
             return cur.fetchall()
 
@@ -50,9 +66,7 @@ VALID_METRICS = {"temperature", "humidity", "lux"}
 
 def get_average_data(metric: Metric):
 
-    metric_name = metric.value
-
-    if metric_name not in VALID_METRICS:
+    if metric.value not in VALID_METRICS:
         raise ValueError("Métrica inválida")
 
     query = sql.SQL(

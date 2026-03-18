@@ -3,7 +3,9 @@ import paho.mqtt.client as mqtt
 
 from app.database.db import insert_sensor_data
 
-MQTT_BROKER = "192.168.86.8"
+# MQTT_BROKER = "192.168.86.8"
+
+MQTT_BROKER = "10.64.89.110"
 MQTT_PORT = 1883
 MQTT_TOPIC = "iot/esp32/environment"
 
