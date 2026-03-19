@@ -23,11 +23,8 @@ def row_to_dict(row):
 @router.get("/latest", response_model=List[dict])
 def get_latest(
     hours: Hours = Query(Hours.h1, description="Intervalo em horas"),
-    to_time: Optional[datetime] = Query(None, description="Instante final (padrão: agora)"),
 ):
-    if to_time is None:
-        to_time = datetime.now(timezone.utc)
-
+    to_time = datetime.now(timezone.utc)
     from_time = to_time - timedelta(hours=hours.value)
 
     try:
