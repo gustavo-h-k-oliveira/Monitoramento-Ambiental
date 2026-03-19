@@ -61,12 +61,7 @@ def get_latest_data(from_time: Optional[datetime] = None, to_time: Optional[date
 
             return cur.fetchall()
 
-VALID_METRICS = {"temperature", "humidity", "lux"}
-
 def get_average_data(metric: Metric):
-
-    if metric.value not in VALID_METRICS:
-        raise ValueError("Métrica inválida")
 
     query = sql.SQL(
         """
