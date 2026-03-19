@@ -57,7 +57,6 @@ def get_latest_data(from_time: Optional[datetime] = None, to_time: Optional[date
 
             query += " ORDER BY time DESC"
 
-            # converte para o tipo que psycopg espera (QueryNoTemplate)
             cur.execute(pgsql.SQL(query), tuple(params))
 
             return cur.fetchall()
